@@ -1,0 +1,5 @@
+app/data/decoded_data/*
+app/data/encoded_data/*
+app/*.pyc
+__pycache__/
+logs/
