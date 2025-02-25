@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import request, Blueprint,send_file,jsonify
 import logging
 
 from app import limiter
@@ -18,19 +18,27 @@ def encode():
         file: wav audio file
     """
     try:
-
-        image_file = request.files.get("image")
-        if not image_file:
+        image_file_1 = request.files.get("image_1")
+        image_file_2 = request.files.get("image_2")
+        if not image_file_1:
             return {"status":'error',"msg": "No image file provided."}
 
         token = request.form.get("token")
         if not token:
             return {"status":'error',"msg": "No token provided."}
-
-        if not TokenHandling().verifyToken(token):
+        if not TokenHandling().verify_token(token):
             return {"status":'error',"msg": "Invalid token."}
-        
-        return encode_audio(image_file)
+        status = EncodeApt().encode_apt(image_file_1,image_file_2=image_file_2)
+        if 'file' in status:
+            wav_file_path = status['file']
+            del status['file']
+        TokenHandling().track_requests(token,"encode")
+        return send_file(
+            wav_file_path,
+            as_attachment=True,
+            download_name="encoded_audio_data.wav"
+        )
+
     except Exception as e:
         logging.error(f"Error: {e}")
-        return {"message": "An error occurred."}, 500
+        return jsonify({"status":'error',"message": "Backend error"})

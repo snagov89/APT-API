@@ -1,9 +1,9 @@
 
 import logging
 from app.models.salt import GenSalt
-from app.repository.token_handling import TokenHandling
+from app.repository.token_handling import TokenHandleDb
 
-token_repo = TokenHandling()
+token_repo = TokenHandleDb()
 class TokenHandling:
 
     def generate_token(self) -> dict[str,str]:
@@ -15,11 +15,20 @@ class TokenHandling:
             logging.error(f"Error: {err}")
             return {"status":'error',"msg": "An error occurred."}
 
+    def track_requests(self,token:str,action:str) -> dict[str,str]:
+        try:
+            token_repo.track_requests(token,action)
+            return {"status":'success',"msg": "success"}
+        except Exception as err:
+            logging.error(f"Error: {err}")
+            return {"status":'error',"msg": "An error occurred."}
 
-    def verifyToken(self,token:str) -> bool:
+    def verify_token(self,token:str) -> bool:
         try:
             token_validity = token_repo.check_token(token)
-            return token_validity
+            if token_validity['status'] == 'ok':
+                return True
+            return False
         except Exception as err:
             logging.error(f"Error: {err}")
             return {"status":'error',"msg": "An error occurred."}

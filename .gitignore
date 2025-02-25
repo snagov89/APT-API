@@ -1,0 +1,4 @@
+app/data/decoded_data/*
+app/data/encoded_data/*
+app/*.pyc
+./logs/*

@@ -2,7 +2,7 @@ from flask import request, Blueprint
 import logging
 
 from app import limiter
-from app.services.decoding import decode_audio
+from app.services.decoding import DecodeApt
 decode_api_blueprint = Blueprint("decode_api", __name__)
 
 @decode_api_blueprint.route("/decode", methods=["POST"])
@@ -26,7 +26,7 @@ def decode():
             return {"status":"error","message": "No token provided"}
 
         
-        image = decode_audio(audio_file, token)
+        image = DecodeApt().decode_audio(audio_file, token)
 
         return image
     except Exception as e:

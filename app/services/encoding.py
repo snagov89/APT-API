@@ -1,4 +1,3 @@
-
 import cv2
 import logging
 import os
@@ -6,22 +5,44 @@ import math
 import wave
 from app.models.salt import GenSalt
 
-
 class EncodeApt:
-    def encode_apt(self,image_file_1:bytes,image_file_2:bytes) -> str:
+    def encode_apt(self, image_file_1: bytes, image_file_2: bytes=None) -> str:
         try:
+            image_file_1 = image_file_1.read()
+            if image_file_2:
+                image_file_2 = image_file_2.read()
+
+            # Generate file names and paths
             wav_file_name = f"{GenSalt().gen_salt(10)}.wav"
-            file_path = os.path.join(os.getcwd(), "app", "static", "audio")
+            file_path = os.path.join(os.getcwd(), "app", "data", "encoded_data")
+            os.makedirs(file_path, exist_ok=True)
             wav_file_path = os.path.join(file_path, wav_file_name)
             image_path_1 = os.path.join(file_path, f"{GenSalt().gen_salt(15)}.jpg")
-            image_path_2 = os.path.join(file_path, f"{GenSalt().gen_salt(15)}.jpg")
-            
-            EncodeImages(file_path).input_images(image_path_1=image_file_1, image_path_2=image_file_2)
-            return "Encoded audio file"
+            image_path_2 = os.path.join(file_path, f"{GenSalt().gen_salt(15)}.jpg") if image_file_2 else image_path_1
+
+            with open(image_path_1, 'wb') as f:
+                f.write(image_file_1)
+
+            if image_file_2 is not None:
+                with open(image_path_2, 'wb') as f:
+                    f.write(image_file_2)
+            encoder = EncodeImages(wav_file_path)
+            encoder.input_images(image_path_1=image_path_1, image_path_2=image_path_2)
+            encoder.get_image_res()
+            encoder.process_images()
+
+            return {'status':'ok','message':'success','file':wav_file_path}
         except Exception as e:
             logging.error(f"Error: {e}")
-            return {"status":'error',"msg": "An error occurred."}
-        
+            return {"status": 'error', "msg": "An error occurred."}
+        finally:
+            try:
+                if os.path.exists(image_path_1):
+                    os.remove(image_path_1)
+                if image_file_2 and os.path.exists(image_path_2):
+                    os.remove(image_path_2)
+            except Exception as cleanup_error:
+                logging.error(f"Failed to delete image files: {cleanup_error}")
 
 class DefinedValues:
     def __init__(self):
@@ -36,6 +57,7 @@ class DefinedValues:
 
     def map_value(self, value, f1, t1, f2, t2):
         return f2 + ((t2 - f2) * (value - f1)) / (t1 - f1)
+
 
 class EncodeImages(DefinedValues):
     def __init__(self, output_wav="output.wav"):
@@ -61,12 +83,17 @@ class EncodeImages(DefinedValues):
                 self.image_1 = cv2.imread(image_path_1, cv2.IMREAD_GRAYSCALE)
             if image_path_2 is not None:
                 self.image_2 = cv2.imread(image_path_2, cv2.IMREAD_GRAYSCALE)
-            else:
-                self.image_2 = self.image_1.copy() if self.image_1 is not None else None
+            
+            if self.image_1 is None:
+                logging.error(f"Failed to load image: {image_path_1}")
+                return False
+            if self.image_2 is None:
+                logging.warning(f"Image 2 not provided or failed to load, using Image 1 as fallback.")
+                self.image_2 = self.image_1.copy()
 
-            return self.image_1 is not None
+            return True
         except Exception as error:
-            print(f"Failed to load images. Error: {error}")
+            logging.error(f"Failed to load images. Error: {error}")
             return False
 
     def resize_image(self, cv2_image):
