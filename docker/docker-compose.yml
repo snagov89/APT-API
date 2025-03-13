@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: dockerized-api
+    environment:
+      - ENVIRONMENT=prod
+      - FLASK_APP=app
+      - mongo_connection_string=mongodb://10.12.11.120:27017
+    ports:
+      - "1337:1337"
+    volumes:
+      - ..:/app
+    working_dir: /app
+    command: ["/app/docker/entrypoint.sh"]
