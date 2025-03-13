@@ -12,7 +12,6 @@ class EncodeApt:
             if image_file_2:
                 image_file_2 = image_file_2.read()
 
-            # Generate file names and paths
             wav_file_name = f"{GenSalt().gen_salt(10)}.wav"
             file_path = os.path.join(os.getcwd(), "app", "data", "encoded_data")
             os.makedirs(file_path, exist_ok=True)

@@ -4,14 +4,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-
 RUN apt-get update && apt-get install -y \
     apt-utils \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    libgtk-3-0 \
     build-essential \
+    libfftw3-3 \
     && rm -rf /var/lib/apt/lists/*
-
 
 RUN pip install poetry
 
@@ -25,7 +25,7 @@ RUN poetry install --no-root
 COPY docker/entrypoint.sh /app/docker/entrypoint.sh
 
 RUN chmod +x /app/docker/entrypoint.sh
-
+RUN chmod +x /app/app/bin/noaa-apt
 ARG ENVIRONMENT=prod
 ENV ENVIRONMENT=${ENVIRONMENT}
 
