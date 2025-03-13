@@ -5,7 +5,7 @@
  - Flask
  - MongoDB
  - Docker
-
+ - [Noaa apt decoder](https://noaa-apt.mbernardi.com.ar/) 
 ### What's this API ?
 
 This API is a **school project** API that has 2 functionalities:
@@ -47,10 +47,24 @@ poetry run python run.py
 
 #### Running using docker
 
-..
+Go to the docker directory.
+
+Make sure to modify the mongo connection string in the docker-compose.yml file.
+
+Then you can build the container using docker compose
+
+```
+docker compose build
+```
+
+and after that, you can run the container
+
+```
+docker compose up
+```
 
 
-#### Usage
+## Usage
 
 #### Generate token
 
@@ -63,7 +77,7 @@ poetry run python create_token.py
 Use the created token in your requests.
 
 
-##### Encoding
+#### Encoding
 
 ```
  curl -X POST "http://localhost:1337/encode" \
@@ -80,4 +94,20 @@ The output will be saved to a wav file.
 **If you see that the request finished right after sending the request that means something went wrong. Do a curl without the -o flag to see the status**
 
 
-##### Decoding
+#### Decoding
+
+The decoding part uses the noaa-apt binary.
+
+I know that it is not ideal but I am planning to write my own implementation of the noaa-apt decode.
+
+For now, the noaa-apt binary works well.
+
+Example curl request:
+
+```
+ curl -X POST "http://localhost:1337/decode" \
+     -H "Content-Type: multipart/form-data" \
+     -F "audio=@/your/path/for/audio/wav" \
+     -F "token=your_token" \
+     -o ./your_image_file.png
+```

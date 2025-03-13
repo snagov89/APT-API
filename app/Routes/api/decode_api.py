@@ -1,8 +1,10 @@
-from flask import request, Blueprint
+from flask import request, Blueprint,send_file
 import logging
+import io
 
 from app import limiter
 from app.services.decoding import DecodeApt
+from app.services.token_handling import TokenHandling
 decode_api_blueprint = Blueprint("decode_api", __name__)
 
 @decode_api_blueprint.route("/decode", methods=["POST"])
@@ -25,10 +27,11 @@ def decode():
         if not token:
             return {"status":"error","message": "No token provided"}
 
-        
-        image = DecodeApt().decode_audio(audio_file, token)
-
-        return image
+        TokenHandling().track_requests(token,"encode")
+        image_data = DecodeApt().decode_audio(audio_file)
+        img_io = io.BytesIO(image_data)
+        img_io.seek(0)
+        return send_file(img_io, mimetype='image/png')
     except Exception as e:
         logging.error(f"Error: {e}")
         return {'status':'error','msg':'An error occurred.'}

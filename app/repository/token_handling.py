@@ -11,7 +11,7 @@ class TokenHandleDb(BaseMongo):
         return {"status":'ok','msg':'success'}
 
     def check_token(self,token:str) -> dict[str,str]:
-        self.insert_new_token('123')
+        # self.insert_new_token('123')
         token = self.tokens.find_one({"token":token})
         if token:
             return {"status":'ok','msg':'success'}
