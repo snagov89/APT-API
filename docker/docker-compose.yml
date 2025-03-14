@@ -5,7 +5,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: dockerized-api
+    container_name: dockerized-client
     environment:
       - ENVIRONMENT=prod
       - FLASK_APP=app
